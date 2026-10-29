@@ -1,23 +1,96 @@
+import { useMemo, useState } from 'react';
+import PageHead from '../../components/PageHead.jsx';
+import ProductRow from '../../components/ProductRow.jsx';
+import { CATEGORIES, PRODUCTS } from '../../data/products.js';
+
+function normalize(text) {
+  return text
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .toLowerCase();
+}
+
 export default function CatalogPage() {
-  const products = [
-    { id: 'prod-1', name: 'Laptop Pro 14', price: 1800, stock: 24 },
-    { id: 'prod-2', name: 'Impresora térmica', price: 640, stock: 15 },
-    { id: 'prod-3', name: 'Kit de herramientas', price: 290, stock: 42 },
-  ];
+  const [query, setQuery] = useState('');
+  const [category, setCategory] = useState('todos');
+
+  const visible = useMemo(() => {
+    const needle = normalize(query.trim());
+    return PRODUCTS.filter((product) => {
+      const inCategory = category === 'todos' || product.category === category;
+      const matches = needle === '' || normalize(`${product.name} ${product.sku}`).includes(needle);
+      return inCategory && matches;
+    });
+  }, [query, category]);
+
+  function clearFilters() {
+    setQuery('');
+    setCategory('todos');
+  }
 
   return (
-    <section>
-      <h2>Catálogo</h2>
-      <div className="grid products-grid">
-        {products.map((product) => (
-          <article key={product.id} className="card product-card">
-            <h3>{product.name}</h3>
-            <p>Precio: S/ {product.price}</p>
-            <p>Stock: {product.stock}</p>
-            <a href={`/product/${product.id}`} className="button primary">Comprar</a>
-          </article>
-        ))}
+    <>
+      <PageHead title="Catálogo">
+        Precios unitarios sin IGV. Si compras varias unidades del mismo producto, el precio baja.
+      </PageHead>
+
+      <div className="toolbar">
+        <label className="field">
+          <span className="sr-only">Buscar por nombre o código</span>
+          <input
+            className="input"
+            type="search"
+            placeholder="Buscar por nombre o código"
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+          />
+        </label>
+
+        <div className="chips" role="group" aria-label="Filtrar por categoría">
+          <button type="button" className="chip" aria-pressed={category === 'todos'} onClick={() => setCategory('todos')}>
+            Todos
+          </button>
+          {CATEGORIES.map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              className="chip"
+              aria-pressed={category === item.id}
+              onClick={() => setCategory(item.id)}
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
       </div>
-    </section>
+
+      <p className="muted small" role="status" style={{ marginBottom: '0.75rem' }}>
+        {visible.length} {visible.length === 1 ? 'producto' : 'productos'}
+      </p>
+
+      {visible.length > 0 ? (
+        <>
+          <div className="rows__head" aria-hidden="true">
+            <span>Producto</span>
+            <span>Stock</span>
+            <span>Precio unitario</span>
+            <span>Cantidad</span>
+          </div>
+          <ul className="rows">
+            {visible.map((product) => (
+              <ProductRow key={product.id} product={product} />
+            ))}
+          </ul>
+        </>
+      ) : (
+        <div className="empty">
+          <h2>No encontramos productos con esos filtros</h2>
+          <p className="muted">Prueba con otra palabra o quita la categoría seleccionada.</p>
+          <button type="button" className="btn btn--ghost" onClick={clearFilters}>
+            Quitar filtros
+          </button>
+        </div>
+      )}
+    </>
   );
 }
