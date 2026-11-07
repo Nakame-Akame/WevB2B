@@ -1,4 +1,4 @@
-import { IGV_RATE, formatPEN, formatPercent } from '../data/products.js';
+import { IGV_RATE, formatPEN, formatPercent } from '../data/pricing.js';
 
 export default function OrderSummary({ cart, children }) {
   return (

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import PageHead from '../../components/PageHead.jsx';
-import { VOLUME_TIERS, formatPercent } from '../../data/products.js';
+import { VOLUME_TIERS, formatPercent } from '../../data/pricing.js';
 
 export default function B2BPage() {
   const [sent, setSent] = useState(false);

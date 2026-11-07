@@ -53,6 +53,20 @@ const GLYPHS = {
       <path d="M48 34h.01" />
     </>
   ),
+  chair: (
+    <>
+      <rect x="14" y="8" width="9" height="24" rx="3" />
+      <rect x="14" y="32" width="34" height="8" rx="3" />
+      <path d="M23 24h14v8" />
+      <path d="M31 40v10M19 56h24M31 50l-12 6M31 50l12 6" />
+    </>
+  ),
+  box: (
+    <>
+      <path d="M8 20l24-10 24 10v24L32 54 8 44z" />
+      <path d="M8 20l24 10 24-10M32 30v24" />
+    </>
+  ),
 };
 
 export default function ProductThumb({ glyph, large = false }) {
@@ -67,7 +81,7 @@ export default function ProductThumb({ glyph, large = false }) {
         strokeLinecap="round"
         strokeLinejoin="round"
       >
-        {GLYPHS[glyph] ?? GLYPHS.toolbox}
+        {GLYPHS[glyph] ?? GLYPHS.box}
       </svg>
     </div>
   );

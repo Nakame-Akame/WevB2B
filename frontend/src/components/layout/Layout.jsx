@@ -40,13 +40,17 @@ export default function Layout() {
                 {link.label}
               </NavLink>
             ))}
-            <NavLink to="/cart" className={navClass}>
-              Mi pedido
+          </nav>
+
+          {/* Fuera de la barra para que en móvil el pedido siempre quede a la vista. */}
+          <NavLink to="/cart" className={(state) => `${navClass(state)} nav__cart`}>
+            Mi pedido
+            {count > 0 ? (
               <span className="cart-count" aria-label={`${count} ${count === 1 ? 'producto' : 'productos'} en tu pedido`}>
                 {count}
               </span>
-            </NavLink>
-          </nav>
+            ) : null}
+          </NavLink>
         </div>
       </header>
 

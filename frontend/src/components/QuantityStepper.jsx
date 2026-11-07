@@ -19,7 +19,7 @@ export default function QuantityStepper({ value, onChange, min = 1, max = 999, l
         className="stepper__input"
         type="number"
         inputMode="numeric"
-        aria-label={label}
+        aria-label="Unidades"
         min={min}
         max={max}
         value={value}

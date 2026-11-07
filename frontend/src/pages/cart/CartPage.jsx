@@ -4,7 +4,7 @@ import ProductThumb from '../../components/ProductThumb.jsx';
 import QuantityStepper from '../../components/QuantityStepper.jsx';
 import OrderSummary from '../../components/OrderSummary.jsx';
 import { useCart } from '../../context/CartContext.jsx';
-import { formatPEN, formatPercent, nextTierFor, tierFor } from '../../data/products.js';
+import { formatPEN, formatPercent, nextTierFor, tierFor } from '../../data/pricing.js';
 
 export default function CartPage() {
   const cart = useCart();
@@ -24,6 +24,8 @@ export default function CartPage() {
     );
   }
 
+  const unavailable = cart.lines.filter((line) => line.product.stock === 0);
+
   const nudge = cart.lines
     .map((line) => ({ line, next: nextTierFor(line.qty) }))
     .find(({ line, next }) => next && next.min <= line.product.stock && next.min - line.qty <= 3);
@@ -34,6 +36,14 @@ export default function CartPage() {
 
       <div className="split split--wide-left">
         <div className="stack" style={{ '--stack': '1.25rem' }}>
+          {unavailable.length > 0 ? (
+            <p className="hint" role="alert">
+              {unavailable.map((line) => line.product.name).join(', ')}{' '}
+              {unavailable.length === 1 ? 'ya no tiene stock' : 'ya no tienen stock'}. Quita los productos agotados para
+              continuar al pago.
+            </p>
+          ) : null}
+
           {nudge ? (
             <p className="hint">
               Agrega {nudge.next.min - nudge.line.qty} {nudge.next.min - nudge.line.qty === 1 ? 'unidad' : 'unidades'} más de{' '}
@@ -44,6 +54,7 @@ export default function CartPage() {
           <ul className="cart-lines">
             {cart.lines.map((line) => {
               const tier = tierFor(line.qty);
+              const soldOut = line.product.stock === 0;
               return (
                 <li key={line.product.id} className="cart-line">
                   <ProductThumb glyph={line.product.glyph} />
@@ -52,18 +63,25 @@ export default function CartPage() {
                       {line.product.name}
                     </Link>
                     <p className="muted small">
-                      {formatPEN(line.unit)} c/u
-                      {tier.discount > 0 ? ` · ${formatPercent(tier.discount)} de descuento por volumen` : ''}
+                      {soldOut
+                        ? 'Agotado'
+                        : `${formatPEN(line.unit)} c/u${
+                            tier.discount > 0 ? `, con ${formatPercent(tier.discount)} de descuento por volumen` : ''
+                          }`}
                     </p>
                   </div>
                   <div className="cart-line__controls">
-                    <QuantityStepper
-                      value={line.qty}
-                      onChange={(qty) => cart.setQuantity(line.product.id, qty)}
-                      max={line.product.stock}
-                      label={`Cantidad de ${line.product.name}`}
-                    />
-                    <p className="cart-line__total">{formatPEN(line.total)}</p>
+                    {soldOut ? null : (
+                      <>
+                        <QuantityStepper
+                          value={line.qty}
+                          onChange={(qty) => cart.setQuantity(line.product.id, qty)}
+                          max={line.product.stock}
+                          label={`Cantidad de ${line.product.name}`}
+                        />
+                        <p className="cart-line__total">{formatPEN(line.total)}</p>
+                      </>
+                    )}
                     <button type="button" className="link-button" onClick={() => cart.remove(line.product.id)}>
                       Quitar
                       <span className="sr-only"> {line.product.name}</span>
@@ -80,9 +98,15 @@ export default function CartPage() {
         </div>
 
         <OrderSummary cart={cart}>
-          <Link to="/checkout" className="btn btn--block">
-            Continuar al pago
-          </Link>
+          {unavailable.length > 0 ? (
+            <button type="button" className="btn btn--block" disabled>
+              Continuar al pago
+            </button>
+          ) : (
+            <Link to="/checkout" className="btn btn--block">
+              Continuar al pago
+            </Link>
+          )}
         </OrderSummary>
       </div>
     </>

@@ -1,5 +1,5 @@
 import PageHead from '../../components/PageHead.jsx';
-import { formatPEN } from '../../data/products.js';
+import { formatPEN } from '../../data/pricing.js';
 
 const STAGES = ['Recibido', 'En preparación', 'En tránsito', 'Entregado'];
 

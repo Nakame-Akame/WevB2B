@@ -1,11 +1,13 @@
 import { Link } from 'react-router-dom';
 import ProductThumb from '../../components/ProductThumb.jsx';
 import QuoteSheet from '../../components/QuoteSheet.jsx';
-import { PRODUCTS, VOLUME_TIERS, formatPEN, formatPercent } from '../../data/products.js';
-
-const featured = PRODUCTS.slice(0, 3);
+import { useProducts } from '../../context/ProductsContext.jsx';
+import { VOLUME_TIERS, formatPEN, formatPercent } from '../../data/pricing.js';
 
 export default function HomePage() {
+  const { products, status } = useProducts();
+  const featured = products.filter((product) => product.stock > 0).slice(0, 3);
+
   return (
     <>
       <section className="hero" aria-labelledby="hero-title">
@@ -57,28 +59,42 @@ export default function HomePage() {
         </ol>
       </section>
 
-      <section className="section" aria-labelledby="featured-title">
-        <div className="section-head">
-          <h2 id="featured-title">Lo que más piden las empresas</h2>
-          <Link to="/catalog" className="link">
-            Ver todo el catálogo
-          </Link>
-        </div>
-        <div className="featured">
-          {featured.map((product) => (
-            <Link key={product.id} to={`/product/${product.id}`} className="featured__item">
-              <ProductThumb glyph={product.glyph} large />
-              <div>
-                <p className="featured__name">{product.name}</p>
-                <p className="price">
-                  {formatPEN(product.price)}
-                  <span className="price__note">Precio unitario sin IGV</span>
-                </p>
-              </div>
+      {status === 'loading' || featured.length > 0 ? (
+        <section className="section" aria-labelledby="featured-title">
+          <div className="section-head">
+            <h2 id="featured-title">Algunos productos del catálogo</h2>
+            <Link to="/catalog" className="link">
+              Ver todo el catálogo
             </Link>
-          ))}
-        </div>
-      </section>
+          </div>
+
+          {status === 'loading' ? (
+            <div className="featured" aria-hidden="true">
+              {[0, 1, 2].map((slot) => (
+                <div key={slot} className="featured__item">
+                  <div className="ghost thumb-ghost" />
+                  <div className="ghost ghost--price" />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="featured">
+              {featured.map((product) => (
+                <Link key={product.id} to={`/product/${product.id}`} className="featured__item">
+                  <ProductThumb glyph={product.glyph} large />
+                  <div>
+                    <p className="featured__name">{product.name}</p>
+                    <p className="price">
+                      {formatPEN(product.price)}
+                      <span className="price__note">Precio unitario sin IGV</span>
+                    </p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+        </section>
+      ) : null}
 
       <section className="section split" aria-labelledby="volume-title">
         <div className="stack" style={{ '--stack': '1rem' }}>
